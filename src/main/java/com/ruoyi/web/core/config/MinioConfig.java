@@ -4,12 +4,8 @@ import io.minio.MinioClient;
 import io.minio.org.apache.commons.validator.routines.InetAddressValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Lazy;
 
 import java.net.InetAddress;
 
@@ -17,7 +13,7 @@ import java.net.InetAddress;
 @ConfigurationProperties(prefix = "minio")
 public class MinioConfig {
     final static Logger logger = LoggerFactory.getLogger(MinioConfig.class);
-    
+
     private static String host;
     private static String port;
     private static String bucket;
@@ -25,8 +21,8 @@ public class MinioConfig {
     private static String password;
     private static String url;
 
-    @Bean
-    @Lazy
+    //@Bean
+    //@Lazy
 //    @ConditionalOnProperty(name = "ruoyi.uploadType", havingValue = "minio")
     public MinioClient minioClient() throws Exception {
         //minio的初始化存在一个小问题，endpoint必须是ip形式，不能是host

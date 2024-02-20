@@ -1,7 +1,7 @@
 # 项目相关配置
 ruoyi:
   # 名称
-  name: 抽奖系统
+  name: 在线考试后台管理系统
   # 版本
   version: 4.7.8
   # 版权年份
@@ -19,8 +19,8 @@ ruoyi:
 #例如：http://116.62.213.90:9005/prize/1701754725603.jpeg
 #所以要保障其可访问性，尤其是docker部署的时候，应该是宿主机暴露的端口！
 minio:
-  url: http://116.62.213.90:9005
-  host: prize
+  #url: http://116.62.213.90:9005
+  host: 116.62.213.90
   port: 9005
   bucket: prize
   username: minioadmin
@@ -43,7 +43,7 @@ server:
       max: 800
       # Tomcat启动初始化的线程数，默认值10
       min-spare: 100
- 
+
 # 日志配置
 logging:
   level:
