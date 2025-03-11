@@ -6,8 +6,6 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * 商品测试信息
- * 
- * @author ruoyi
  */
 public class GoodsModel
 {

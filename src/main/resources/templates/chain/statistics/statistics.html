@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: header('数据统计')"/>
+</head>
+<body class="gray-bg">
+<div class="wrapper wrapper-content">
+    <input type="hidden" id="cacheName">
+    <div class="col-sm-12">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5><i class="fa fa-bars"></i> 最佳销售统计 Top10</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <table class="table table-hover no-margins">
+                            <thead>
+                            <tr>
+                                <th>索引</th>
+                                <th>姓名</th>
+                                <th>金额</th>
+                            </tr>
+                            </thead>
+                            <tbody id="bestSalesList">
+                            <tr th:each="map,stat: ${bestSalesList}">
+                                <td>[[${stat.index+1}]]</td>
+                                <td style="word-wrap:break-word;word-break:break-all;">[[${map['user_name']}]]
+                                </td>
+                                <td style="width: 50px">[[${map['total']}]]</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-4">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5><i class="fa fa-bars"></i> 最佳采购统计 Top10</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <table class="table table-hover no-margins">
+                            <thead>
+                            <tr>
+                                <th>索引</th>
+                                <th>姓名</th>
+                                <th>金额</th>
+                            </tr>
+                            </thead>
+                            <tbody id="bestPurchaseList">
+                            <tr th:each="map,stat: ${bestPurchaseList}">
+                                <td>[[${stat.index+1}]]</td>
+                                <td style="word-wrap:break-word;word-break:break-all;">[[${map['user_name']}]]
+                                </td>
+                                <td style="width: 50px">[[${map['total']}]]</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-sm-4">
+                <div class="ibox float-e-margins">
+                    <div class="ibox-title">
+                        <h5><i class="fa fa-bars"></i> 最佳销售产品 Top10</h5>
+                    </div>
+                    <div class="ibox-content">
+                        <table class="table table-hover no-margins">
+                            <thead>
+                            <tr>
+                                <th>索引</th>
+                                <th>姓名</th>
+                                <th>销量</th>
+                            </tr>
+                            </thead>
+                            <tbody id="bestSalesCommodityList">
+                            <tr th:each="map,stat: ${bestSalesCommodityList}">
+                                <td>[[${stat.index+1}]]</td>
+                                <td style="word-wrap:break-word;word-break:break-all;">[[${map['commodity_name']}]]
+                                </td>
+                                <td style="width: 50px">[[${map['total']}]]</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<th:block th:include="include :: footer"/>
+<script th:inline="javascript">
+    var prefix = ctx + "monitor/cache";
+
+    function getCacheNames() {
+        $.ajax({
+            type: "post",
+            url: prefix + "/getNames",
+            data: {
+                "fragment": 'fragment-cache-names'
+            },
+            success: function (data) {
+                $("#cacheNames").html(data);
+                $.modal.msgSuccess("刷新缓存列表成功");
+            }
+        });
+    }
+
+    function getCacheKeys(cacheName, isMsg) {
+        var _cacheName = $.common.isNotEmpty(cacheName) ? cacheName : $("#cacheName").val();
+        $.ajax({
+            type: "post",
+            url: prefix + "/getKeys",
+            data: {
+                "cacheName": _cacheName,
+                "fragment": 'fragment-cache-kyes'
+            },
+            success: function (data) {
+                $("#cacheKeys").html(data);
+                $("#cacheName").val(_cacheName);
+                if (isMsg) {
+                    $.modal.msgSuccess("刷新键名列表成功");
+                }
+            }
+        });
+    }
+
+    function getCacheValue(cacheName, cacheKey) {
+        $.ajax({
+            type: "post",
+            url: prefix + "/getValue",
+            data: {
+                "cacheName": cacheName,
+                "cacheKey": cacheKey,
+                "fragment": 'fragment-cache-value'
+            },
+            success: function (data) {
+                $("#cacheValue").html(data);
+            }
+        });
+    }
+
+    function clearCacheName(cacheName) {
+        $.post(prefix + "/clearCacheName", {cacheName: cacheName}, function (result) {
+            if (result.code == web_status.SUCCESS) {
+                $.modal.msgSuccess("清理缓存[" + cacheName + "]成功")
+                getCacheKeys(cacheName);
+            } else {
+                $.modal.msgError(result.msg);
+            }
+        });
+    }
+
+    function clearCacheKey(cacheName, cacheKey) {
+        $.post(prefix + "/clearCacheKey", {cacheName: cacheName, cacheKey: cacheKey}, function (result) {
+            if (result.code == web_status.SUCCESS) {
+                $.modal.msgSuccess("清理缓存[" + cacheKey + "]成功")
+                getCacheKeys(cacheName);
+            } else {
+                $.modal.msgError(result.msg);
+            }
+        });
+    }
+
+    function clearAll() {
+        $.get(prefix + "/clearAll", function (result) {
+            if (result.code == web_status.SUCCESS) {
+                $.modal.msgSuccess("清理全部缓存成功")
+            } else {
+                $.modal.msgError(result.msg);
+            }
+        });
+    }
+</script>
+</html>

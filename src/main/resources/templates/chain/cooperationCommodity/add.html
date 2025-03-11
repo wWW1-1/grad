@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: header('新增合作公司商品关联')"/>
+</head>
+<body class="white-bg">
+<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+    <form class="form-horizontal m" id="form-cooperationCommodity-add">
+        <div class="form-group">
+            <label class="col-sm-3 control-label is-required">合作公司：</label>
+            <div class="col-sm-8">
+                <div class="input-group">
+                    <input id="cooperationId" name="cooperationId" type="hidden" th:value="${cooperationId}"/>
+                    <input class="form-control" type="text" onclick="selectCooperationIdRadio()" id="cooperationName"
+                           readonly="true" th:value="${cooperationName}" required>
+                    <span class="input-group-addon"><i class="fa fa-search"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label is-required">商品名称：</label>
+            <div class="col-sm-8">
+                <div class="input-group">
+                    <input id="commodityId" name="commodityId" type="hidden" th:value="${commodityId}"/>
+                    <input class="form-control" type="text" onclick="selectCommodityIdRadio()" id="commodityName"
+                           readonly="true" th:value="${commodityName}" required>
+                    <span class="input-group-addon"><i class="fa fa-search"></i></span>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label is-required">批发价格：</label>
+            <div class="col-sm-8">
+                <input id="wholesalePrice" name="wholesalePrice" class="form-control" type="text" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-3 control-label is-required">库存数量：</label>
+            <div class="col-sm-8">
+                <input name="quantity" class="form-control" type="text" required>
+            </div>
+        </div>
+    </form>
+</div>
+<th:block th:include="include :: footer"/>
+<script th:inline="javascript">
+    var prefix = ctx + "chain/cooperationCommodity"
+    var cooperationPrefix = ctx + "chain/cooperation"
+    var commodityPrefix = ctx +"chain/commodity";
+    $("#form-cooperationCommodity-add").validate({
+        focusCleanup: true
+    });
+
+    function selectCooperationIdRadio() {
+        var options = {
+            title: '选择合作公司',
+            url: cooperationPrefix + "/selectCooperation",
+            callBack: doCooperationSubmit
+        };
+        $.modal.openOptions(options);
+    }
+
+
+    function selectCommodityIdRadio() {
+        var options = {
+            title: '选择商品',
+            url: commodityPrefix + "/selectCommodity",
+            callBack: doCommoditySubmit
+        };
+        $.modal.openOptions(options);
+    }
+
+
+
+    function doCooperationSubmit(index, layer) {
+        var body = $.modal.getChildFrame(index);
+        $("#cooperationId").val(body.find("#cooperationId").val());
+        $("#cooperationName").val(body.find("#cooperationName").val());
+        $.modal.close(index);
+    }
+
+
+    function doCommoditySubmit(index, layer) {
+        var body = $.modal.getChildFrame(index);
+        $("#commodityId").val(body.find("#commodityId").val());
+        $("#commodityName").val(body.find("#commodityName").val());
+        $("#wholesalePrice").val(body.find("#retailPrice").val());
+        $.modal.close(index);
+    }
+
+
+    function submitHandler() {
+        if ($.validate.form()) {
+            $.operate.save(prefix + "/add", $('#form-cooperationCommodity-add').serialize());
+        }
+    }
+</script>
+</body>
+</html>

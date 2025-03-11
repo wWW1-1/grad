@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.chain.order.mapper.ChainOrderMapper">
+
+    <resultMap type="ChainOrder" id="ChainOrderResult">
+        <result property="id" column="id"/>
+        <result property="commodityId" column="commodity_id"/>
+        <result property="commodityName" column="commodity_name"/>
+        <result property="image" column="image"/>
+        <result property="purchaseId" column="purchase_id"/>
+        <result property="saleId" column="sale_id"/>
+        <result property="operator" column="operator"/>
+        <result property="amount" column="amount"/>
+        <result property="type" column="type"/>
+        <result property="REVISION" column="REVISION"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="createdTime" column="CREATED_TIME"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="updatedTime" column="UPDATED_TIME"/>
+    </resultMap>
+
+    <sql id="selectChainOrderVo">
+        SELECT a.id,
+               a.commodity_id,
+               b.`name` commodity_name,
+               b.image,
+               CONCAT(IFNULL(e.user_name, ''), IFNULL(g.user_name, '')) operator,
+               a.purchase_id,
+               a.sale_id,
+               a.amount,
+               a.type,
+               a.REVISION,
+               c.user_name CREATED_BY,
+               a.CREATED_TIME,
+               a.UPDATED_BY,
+               a.UPDATED_TIME
+        FROM t_chain_order a
+                 LEFT JOIN t_chain_commodity b ON a.commodity_id = b.id
+                 LEFT JOIN sys_user c ON a.CREATED_BY = c.user_id
+                 LEFT JOIN t_chain_purchase d ON a.purchase_id = d.id
+                 LEFT JOIN sys_user e ON d.user_id = e.user_id
+                 LEFT JOIN t_chain_sale f ON a.sale_id = f.id
+                 LEFT JOIN sys_user g ON f.user_id = g.user_id
+    </sql>
+
+    <select id="selectChainOrderList" parameterType="ChainOrder" resultMap="ChainOrderResult">
+        <include refid="selectChainOrderVo"/>
+        <where>
+            <if test="commodityName != null and commodityName != ''">and b.name LIKE CONCAT('%',#{commodityName},'%')
+            </if>
+            <if test="commodityId != null ">and a.commodity_id = #{commodityId}</if>
+            <if test="purchaseId != null ">and a.purchase_id = #{purchaseId}</if>
+            <if test="saleId != null ">and a.sale_id = #{saleId}</if>
+            <if test="amount != null ">and a.amount = #{amount}</if>
+            <if test="type != null ">and a.type = #{type}</if>
+        </where>
+    </select>
+
+    <select id="selectChainOrderById" parameterType="Long" resultMap="ChainOrderResult">
+        <include refid="selectChainOrderVo"/>
+        where a.id = #{id}
+    </select>
+
+    <select id="selectChainOrderByCommodityId" parameterType="Long" resultMap="ChainOrderResult">
+        <include refid="selectChainOrderVo"/>
+        where a.commodity_id = #{id}
+    </select>
+
+
+    <select id="selectOrderStatistics" resultType="java.util.Map">
+        SELECT type,
+               sum(amount) amount,
+               count(1)    total
+        FROM t_chain_order
+        GROUP BY type
+    </select>
+
+
+    <insert id="insertChainOrder" parameterType="ChainOrder" useGeneratedKeys="true" keyProperty="id">
+        insert into t_chain_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="commodityId != null">commodity_id,</if>
+            <if test="purchaseId != null">purchase_id,</if>
+            <if test="saleId != null">sale_id,</if>
+            <if test="amount != null">amount,</if>
+            <if test="type != null">type,</if>
+            <if test="REVISION != null">REVISION,</if>
+            <if test="createdBy != null">CREATED_BY,</if>
+            <if test="createdTime != null">CREATED_TIME,</if>
+            <if test="updatedBy != null">UPDATED_BY,</if>
+            <if test="updatedTime != null">UPDATED_TIME,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="commodityId != null">#{commodityId},</if>
+            <if test="purchaseId != null">#{purchaseId},</if>
+            <if test="saleId != null">#{saleId},</if>
+            <if test="amount != null">#{amount},</if>
+            <if test="type != null">#{type},</if>
+            <if test="REVISION != null">#{REVISION},</if>
+            <if test="createdBy != null">#{createdBy},</if>
+            <if test="createdTime != null">#{createdTime},</if>
+            <if test="updatedBy != null">#{updatedBy},</if>
+            <if test="updatedTime != null">#{updatedTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateChainOrder" parameterType="ChainOrder">
+        update t_chain_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="commodityId != null">commodity_id = #{commodityId},</if>
+            <if test="purchaseId != null">purchase_id = #{purchaseId},</if>
+            <if test="saleId != null">sale_id = #{saleId},</if>
+            <if test="amount != null">amount = #{amount},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="REVISION != null">REVISION = #{REVISION},</if>
+            <if test="updatedBy != null">UPDATED_BY = #{updatedBy},</if>
+            <if test="updatedTime != null">UPDATED_TIME = #{updatedTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteChainOrderById" parameterType="Long">
+        delete
+        from t_chain_order
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteChainOrderByIds" parameterType="String">
+        delete from t_chain_order where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

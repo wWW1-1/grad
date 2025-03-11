@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * 报表
- * 
- * @author ruoyi
  */
 @Controller
 @RequestMapping("/demo/report")

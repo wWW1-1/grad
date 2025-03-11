@@ -34,13 +34,10 @@ import java.util.List;
 
 /**
  * 通用请求处理
- *
- * @author ruoyi
  */
 @Controller
 @RequestMapping("/common")
-public class CommonController
-{
+public class CommonController {
     private static final Logger log = LoggerFactory.getLogger(CommonController.class);
 
     @Autowired
@@ -55,15 +52,12 @@ public class CommonController
      * 通用下载请求
      *
      * @param fileName 文件名称
-     * @param delete 是否删除
+     * @param delete   是否删除
      */
     @GetMapping("/download")
-    public void fileDownload(String fileName, Boolean delete, HttpServletResponse response, HttpServletRequest request)
-    {
-        try
-        {
-            if (!FileUtils.checkAllowDownload(fileName))
-            {
+    public void fileDownload(String fileName, Boolean delete, HttpServletResponse response, HttpServletRequest request) {
+        try {
+            if (!FileUtils.checkAllowDownload(fileName)) {
                 throw new Exception(StringUtils.format("文件名称({})非法，不允许下载。 ", fileName));
             }
             String realFileName = System.currentTimeMillis() + fileName.substring(fileName.indexOf("_") + 1);
@@ -72,22 +66,19 @@ public class CommonController
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             FileUtils.setAttachmentResponseHeader(response, realFileName);
             FileUtils.writeBytes(filePath, response.getOutputStream());
-            if (delete)
-            {
+            if (delete) {
                 FileUtils.deleteFile(filePath);
             }
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.error("下载文件失败", e);
         }
     }
 
-    private String upload2Minio(MultipartFile file){
-        String name = Seq.getId(Seq.uploadSeqType)+"."+ FilenameUtils.getExtension(file.getOriginalFilename());
+    private String upload2Minio(MultipartFile file) {
+        String name = Seq.getId(Seq.uploadSeqType) + "." + FilenameUtils.getExtension(file.getOriginalFilename());
         try {
             minioClient.putObject(
-                    MinioConfig.getBucket(), name,file.getInputStream(),file.getSize(),null,null, file.getContentType()
+                    MinioConfig.getBucket(), name, file.getInputStream(), file.getSize(), null, null, file.getContentType()
             );
         } catch (InvalidBucketNameException e) {
             throw new RuntimeException(e);
@@ -120,17 +111,15 @@ public class CommonController
      */
     @PostMapping("/upload")
     @ResponseBody
-    public AjaxResult uploadFile(MultipartFile file) throws Exception
-    {
-        try
-        {
-            String fileName=null,url=null;
+    public AjaxResult uploadFile(MultipartFile file) throws Exception {
+        try {
+            String fileName = null, url = null;
             // 上传并返回新文件名称
-            if ("minio".equals(RuoYiConfig.getUploadType())){
+            if ("minio".equals(RuoYiConfig.getUploadType())) {
                 //如果指定了minio上传
                 fileName = upload2Minio(file);
-                url = MinioConfig.getUrl()+"/"+MinioConfig.getBucket()+"/"+fileName;
-            }else{
+                url = MinioConfig.getUrl() + "/" + MinioConfig.getBucket() + "/" + fileName;
+            } else {
                 //默认上传本地
                 String filePath = RuoYiConfig.getUploadPath();
                 fileName = FileUploadUtils.upload(filePath, file);
@@ -142,9 +131,7 @@ public class CommonController
             ajax.put("newFileName", FileUtils.getName(fileName));
             ajax.put("originalFilename", file.getOriginalFilename());
             return ajax;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return AjaxResult.error(e.getMessage());
         }
     }
@@ -154,25 +141,22 @@ public class CommonController
      */
     @PostMapping("/uploads")
     @ResponseBody
-    public AjaxResult uploadFiles(List<MultipartFile> files) throws Exception
-    {
-        try
-        {
+    public AjaxResult uploadFiles(List<MultipartFile> files) throws Exception {
+        try {
             // 上传文件路径
             String filePath = RuoYiConfig.getUploadPath();
             List<String> urls = new ArrayList<String>();
             List<String> fileNames = new ArrayList<String>();
             List<String> newFileNames = new ArrayList<String>();
             List<String> originalFilenames = new ArrayList<String>();
-            for (MultipartFile file : files)
-            {
-                String fileName=null,url=null;
+            for (MultipartFile file : files) {
+                String fileName = null, url = null;
                 // 上传并返回新文件名称
-                if ("minio".equals(RuoYiConfig.getUploadType())){
+                if ("minio".equals(RuoYiConfig.getUploadType())) {
                     //如果指定了minio上传
                     fileName = upload2Minio(file);
-                    url = MinioConfig.getUrl()+"/"+MinioConfig.getBucket()+"/"+fileName;
-                }else{
+                    url = MinioConfig.getUrl() + "/" + MinioConfig.getBucket() + "/" + fileName;
+                } else {
                     //默认上传本地
                     fileName = FileUploadUtils.upload(filePath, file);
                     url = serverConfig.getUrl() + fileName;
@@ -188,9 +172,7 @@ public class CommonController
             ajax.put("newFileNames", StringUtils.join(newFileNames, FILE_DELIMETER));
             ajax.put("originalFilenames", StringUtils.join(originalFilenames, FILE_DELIMETER));
             return ajax;
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             return AjaxResult.error(e.getMessage());
         }
     }
@@ -200,12 +182,9 @@ public class CommonController
      */
     @GetMapping("/download/resource")
     public void resourceDownload(String resource, HttpServletRequest request, HttpServletResponse response)
-            throws Exception
-    {
-        try
-        {
-            if (!FileUtils.checkAllowDownload(resource))
-            {
+            throws Exception {
+        try {
+            if (!FileUtils.checkAllowDownload(resource)) {
                 throw new Exception(StringUtils.format("资源文件({})非法，不允许下载。 ", resource));
             }
             // 本地资源路径
@@ -217,9 +196,7 @@ public class CommonController
             response.setContentType(MediaType.APPLICATION_OCTET_STREAM_VALUE);
             FileUtils.setAttachmentResponseHeader(response, downloadName);
             FileUtils.writeBytes(downloadPath, response.getOutputStream());
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
             log.error("下载文件失败", e);
         }
     }

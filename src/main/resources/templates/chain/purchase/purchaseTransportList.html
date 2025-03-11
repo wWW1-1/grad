@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('采购列表')"/>
+</head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="row">
+        <div class="col-sm-12 search-collapse">
+            <form id="formId">
+                <div class="select-list">
+
+                    <ul>
+                        <li>
+                            <label>合作公司：</label>
+                            <input type="text" name="cooperationName"/>
+                        </li>
+                        <li>
+                            <label>商品名称：</label>
+                            <input type="text" name="commodityName"/>
+                        </li>
+                        <li>
+                            <label>运输方式：</label>
+                            <select name="transportType" th:with="type=${@dict.getType('transport_type')}">
+                                <option value="">所有</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}"
+                                        th:value="${dict.dictValue}"></option>
+                            </select>
+                        </li>
+                        <li>
+                            <label>运送状态：</label>
+                            <select name="transportStatus" th:with="type=${@dict.getType('transport_status')}">
+                                <option value="">所有</option>
+                                <option th:each="dict : ${type}" th:text="${dict.dictLabel}"
+                                        th:value="${dict.dictValue}"></option>
+                            </select>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i
+                                    class="fa fa-search"></i>&nbsp;搜索</a>
+                            <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i
+                                    class="fa fa-refresh"></i>&nbsp;重置</a>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group-sm" id="toolbar" role="group">
+            <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="chain:purchase:export">
+                <i class="fa fa-download"></i> 导出
+            </a>
+        </div>
+        <div class="col-sm-12 select-table table-striped">
+            <table id="bootstrap-table"></table>
+        </div>
+    </div>
+</div>
+<th:block th:include="include :: footer"/>
+<script th:inline="javascript">
+    var editFlag = [[${@permission.hasPermi('chain:purchase:edit')}]];
+    var removeFlag = [[${@permission.hasPermi('chain:purchase:remove')}]];
+    var transportTypeDatas = [[${@dict.getType('transport_type')}]];
+    var transportStatusDatas = [[${@dict.getType('transport_status')}]];
+    var auditTypeDatas = [[${@dict.getType('audit_type')}]];
+    var prefix = ctx + "chain/purchase";
+
+    queryParams = function (params) {
+        var search = {};
+        $.each($("#formId").serializeArray(), function (i, field) {
+            search[field.name] = field.value;
+        });
+        search.auditType = 3;
+        search.pageSize = params.limit;
+        search.pageNum = params.offset / params.limit + 1;
+        search.searchValue = params.search;
+        search.orderByColumn = params.sort;
+        search.isAsc = params.order;
+        return search;
+        var comName = null;
+    }
+
+    $(function () {
+        var options = {
+            url: prefix + "/list",
+            createUrl: prefix + "/add",
+            updateUrl: prefix + "/edit/{id}",
+            removeUrl: prefix + "/remove",
+            exportUrl: prefix + "/export",
+            modalName: "采购",
+            queryParams: queryParams,
+            columns: [{
+                checkbox: true
+            },
+                {
+                    field: 'id',
+                    title: '主键',
+                    visible: false
+                },
+                {
+                    field: 'cooperationName',
+                    title: '合作公司'
+                },
+                {
+                    field: 'commodityName',
+                    title: '商品名称'
+                },
+                {
+                    field: 'userName',
+                    title: '采购人'
+                },
+                {
+                    field: 'image',
+                    title: '商品照片',
+                    formatter: function (value, row, index) {
+                        return '<img src="' + value + '" width="150" height="100">';
+                    }
+                },
+                {
+                    field: 'quantity',
+                    title: '数量'
+                },
+                {
+                    field: 'amount',
+                    title: '金额'
+                },
+                {
+                    field: 'auditType',
+                    title: '审核状态',
+                    formatter: function (value, row, index) {
+                        return $.table.selectDictLabel(auditTypeDatas, value);
+                    }
+                },
+                {
+                    field: 'transportType',
+                    title: '运输方式',
+                    formatter: function (value, row, index) {
+                        return $.table.selectDictLabel(transportTypeDatas, value);
+                    }
+                },
+                {
+                    field: 'transportStatus',
+                    title: '运送状态',
+                    formatter: function (value, row, index) {
+                        return $.table.selectDictLabel(transportStatusDatas, value);
+                    }
+                },
+                {
+                    field: 'createdBy',
+                    title: '创建人'
+                },
+                {
+                    field: 'createdTime',
+                    title: '创建时间'
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function (value, row, index) {
+                        var actions = [];
+                        if (row.transportStatus != 4) {
+                            actions.push('<a class="btn btn-primary btn-xs" href="javascript:void(0)" onclick="submitTransport(\'' + row.id + '\')"><i class="fa fa-exchange"></i>更新货运状态</a> ');
+                        }
+                        return actions.join('');
+                    }
+                }]
+        };
+        $.table.init(options);
+    });
+
+    function submitTransport(purchaseId) {
+        $.modal.open("调整货运状态", prefix + "/transport/" + purchaseId);
+    }
+</script>
+</body>
+</html>

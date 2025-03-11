@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <th:block th:include="include :: header('表格传值给父页面')"/>
+</head>
+<body class="gray-bg">
+<input type="hidden" id="rowIds">
+<input id="commodityId" name="commodityId" type="hidden"/>
+<input id="commodityName" name="commodityName" type="hidden"/>
+<input id="retailPrice" name="retailPrice" type="hidden"/>
+<div class="container-div">
+    <div class="row">
+        <div class="col-sm-12 select-table table-striped">
+            <table id="bootstrap-table"></table>
+        </div>
+    </div>
+</div>
+<div th:include="include :: footer"></div>
+<script th:inline="javascript">
+    var prefix = ctx + "chain/commodity";
+    var datas = [[${@dict.getType('sys_normal_disable')}]];
+
+    $(function () {
+        var options = {
+            url: prefix + "/list",
+            showSearch: false,
+            showRefresh: false,
+            showToggle: false,
+            showColumns: false,
+            columns: [{
+                radio: true
+            },
+                {
+                    field: 'id',
+                    title: '商品ID'
+                },
+                {
+                    field: 'name',
+                    title: '商品名称'
+                },
+                {
+                    field: 'type',
+                    title: '商品类型'
+                },
+                {
+                    field: 'retailPrice',
+                    title: '推荐零售价'
+                }]
+        };
+        $.table.init(options);
+    });
+
+    /* 添加用户-选择用户-提交(子页面调用父页面形式) */
+    function submitHandler(index, layero) {
+        var rows = $.table.selectFirstColumns();
+        if (rows.length == 0) {
+            $.modal.alertWarning("请至少选择一条记录");
+            return;
+        }
+        $.modal.close();
+        // 父页面的方法
+        // activeWindow().selectUsers();
+        // 父页面的变量
+        activeWindow().$('#userids').html('我是通过方式一来的：' + rows.join());
+    }
+
+    /* 添加用户-选择用户-提交(回调形式-父页面调用子页面) */
+    function getSelections() {
+        return $.table.selectFirstColumns();
+    }
+
+    $("#bootstrap-table").on("check.bs.table check-all.bs.table uncheck.bs.table uncheck-all.bs.table", function (e, rowsAfter, rowsBefore) {
+        var rows = $.common.equals("uncheck-all", e.type) ? rowsBefore : rowsAfter;
+        var commodityId = $.table.selectFirstColumns();
+        var commodityName = $.table.selectColumns("name");
+        var retailPrice = $.table.selectColumns("retailPrice");
+        $("#commodityId").val(commodityId);
+        $("#commodityName").val(commodityName);
+        $("#retailPrice").val(retailPrice);
+    });
+</script>
+</body>
+</html>

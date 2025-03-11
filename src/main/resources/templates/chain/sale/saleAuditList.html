@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" xmlns:shiro="http://www.pollix.at/thymeleaf/shiro">
+<head>
+    <th:block th:include="include :: header('采购审核列表')"/>
+</head>
+<body class="gray-bg">
+<div class="container-div">
+    <div class="row">
+        <div class="col-sm-12 search-collapse">
+            <form id="formId">
+                <div class="select-list">
+                    <ul>
+                        <li>
+                            <label>商品名称：</label>
+                            <input type="text" name="commodityName"/>
+                        </li>
+                        <li>
+                            <label>销售人：</label>
+                            <input type="text" name="userName"/>
+                        </li>
+                        <li>
+                            <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i
+                                    class="fa fa-search"></i>&nbsp;搜索</a>
+                            <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i
+                                    class="fa fa-refresh"></i>&nbsp;重置</a>
+                        </li>
+                    </ul>
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group-sm" id="toolbar" role="group">
+            <a class="btn btn-warning" onclick="$.table.exportExcel()" shiro:hasPermission="chain:sale:export">
+                <i class="fa fa-download"></i> 导出
+            </a>
+        </div>
+        <div class="col-sm-12 select-table table-striped">
+            <table id="bootstrap-table"></table>
+        </div>
+    </div>
+</div>
+<th:block th:include="include :: footer"/>
+<script th:inline="javascript">
+    var editFlag = [[${@permission.hasPermi('chain:sale:edit')}]];
+    var removeFlag = [[${@permission.hasPermi('chain:sale:remove')}]];
+    var auditTypeDatas = [[${@dict.getType('audit_type')}]];
+    var prefix = ctx + "chain/sale";
+
+    queryParams = function (params) {
+        var search = {};
+        $.each($("#formId").serializeArray(), function (i, field) {
+            search[field.name] = field.value;
+        });
+        search.auditType = 1;
+        search.pageSize = params.limit;
+        search.pageNum = params.offset / params.limit + 1;
+        search.searchValue = params.search;
+        search.orderByColumn = params.sort;
+        search.isAsc = params.order;
+        return search;
+    }
+
+
+    $(function () {
+        var options = {
+            url: prefix + "/list",
+            createUrl: prefix + "/add",
+            updateUrl: prefix + "/edit/{id}",
+            removeUrl: prefix + "/remove",
+            exportUrl: prefix + "/export",
+            queryParams: queryParams,
+            modalName: "采购",
+            columns: [{
+                checkbox: true
+            },
+                {
+                    field: 'id',
+                    title: '销售ID',
+                    visible: false
+                },
+                {
+                    field: 'commodityName',
+                    title: '商品名称'
+                },
+                {
+                    field: 'image',
+                    title: '商品照片',
+                    formatter: function (value, row, index) {
+                        return '<img src="' + value + '" width="150" height="100">';
+                    }
+                },
+                {
+                    field: 'userName',
+                    title: '销售人'
+                },
+                {
+                    field: 'quantity',
+                    title: '数量'
+                },
+                {
+                    field: 'amount',
+                    title: '销售金额'
+                },
+                {
+                    field: 'auditType',
+                    title: '审核状态',
+                    formatter: function (value, row, index) {
+                        return $.table.selectDictLabel(auditTypeDatas, value);
+                    }
+                },
+                {
+                    field: 'createdBy',
+                    title: '创建人'
+                },
+                {
+                    field: 'createdTime',
+                    title: '创建时间'
+                },
+                {
+                    title: '操作',
+                    align: 'center',
+                    formatter: function (value, row, index) {
+                        var actions = [];
+                        if (row.auditType == 1) {
+                            actions.push('<a class="btn btn-primary btn-xs" href="javascript:void(0)" onclick="submitAudit(\'' + row.id + '\')"><i class="fa fa-exchange"></i>审核</a> ');
+                        }
+                        return actions.join('');
+                    }
+                }]
+        };
+        $.table.init(options);
+    });
+
+    function submitAudit(id) {
+        $.modal.open("销售审核", prefix + "/audit/" + id);
+    }
+</script>
+</body>
+</html>

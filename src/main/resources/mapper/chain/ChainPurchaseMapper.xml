@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.chain.purchase.mapper.ChainPurchaseMapper">
+
+    <resultMap type="ChainPurchase" id="ChainPurchaseResult">
+        <result property="id" column="id"/>
+        <result property="cooCommodityId" column="coo_commodity_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="userName" column="user_name"/>
+        <result property="cooperationId" column="cooperation_id"/>
+        <result property="cooperationName" column="cooperation_name"/>
+        <result property="commodityId" column="commodity_id"/>
+        <result property="commodityName" column="commodity_name"/>
+        <result property="image" column="image"/>
+        <result property="quantity" column="quantity"/>
+        <result property="amount" column="amount"/>
+        <result property="auditType" column="audit_type"/>
+        <result property="auditInfo" column="audit_info"/>
+        <result property="transportType" column="transport_type"/>
+        <result property="transportStatus" column="transport_status"/>
+        <result property="REVISION" column="REVISION"/>
+        <result property="createdBy" column="CREATED_BY"/>
+        <result property="createdTime" column="CREATED_TIME"/>
+        <result property="updatedBy" column="UPDATED_BY"/>
+        <result property="updatedTime" column="UPDATED_TIME"/>
+    </resultMap>
+
+    <sql id="selectChainPurchaseVo">
+        SELECT a.id,
+               a.coo_commodity_id,
+               a.user_id,
+               e.user_name,
+               b.cooperation_id,
+               c.`name`    cooperation_name,
+               b.commodity_id,
+               d.`name`    commodity_name,
+               d.image,
+               a.quantity,
+               a.amount,
+               a.audit_type,
+               a.audit_info,
+               a.transport_type,
+               a.transport_status,
+               a.REVISION,
+               f.user_name CREATED_BY,
+               a.CREATED_TIME,
+               a.UPDATED_BY,
+               a.UPDATED_TIME
+        FROM t_chain_purchase a
+                 LEFT JOIN t_chain_cooperation_commodity b ON a.coo_commodity_id = b.id
+                 LEFT JOIN t_chain_cooperation c ON b.cooperation_id = c.id
+                 LEFT JOIN t_chain_commodity d ON b.commodity_id = d.id
+                 LEFT JOIN sys_user e ON a.user_id = e.user_id
+                 LEFT JOIN sys_user f ON a.CREATED_BY = f.user_id
+    </sql>
+
+    <select id="selectChainPurchaseList" parameterType="ChainPurchase" resultMap="ChainPurchaseResult">
+        <include refid="selectChainPurchaseVo"/>
+        <where>
+            <if test="cooperationId != null ">and b.cooperation_id = #{cooperationId}</if>
+            <if test="cooperationName != null and cooperationName !=''">and b.name LIKE
+                CONCAT('%',#{cooperationName},'%')
+            </if>
+            <if test="commodityId != null ">and b.commodity_id = #{commodityId}</if>
+            <if test="commodityName != null and commodityName != ''">and d.name LIKE CONCAT('%',#{commodityName},'%')
+            </if>
+            <if test="quantity != null ">and a.quantity = #{quantity}</if>
+            <if test="amount != null ">and a.amount = #{amount}</if>
+            <if test="auditType != null ">and a.audit_type = #{auditType}</if>
+            <if test="transportType != null ">and a.transport_type = #{transportType}</if>
+            <if test="transportStatus != null ">and a.transport_status = #{transportStatus}</if>
+        </where>
+    </select>
+
+    <select id="selectChainPurchaseById" parameterType="Long" resultMap="ChainPurchaseResult">
+        <include refid="selectChainPurchaseVo"/>
+        where a.id = #{id}
+    </select>
+
+    <select id="selectChainPurchaseByCooperationCommodityId" parameterType="Long" resultMap="ChainPurchaseResult">
+        <include refid="selectChainPurchaseVo"/>
+        where a.coo_commodity_id = #{id}
+    </select>
+
+
+    <select id="selectBestPurchase" resultType="java.util.Map">
+        SELECT x.user_name,
+               x.total
+        FROM (SELECT d.user_name,
+                     sum(a.amount) total
+              FROM t_chain_purchase a
+                       LEFT JOIN t_chain_cooperation_commodity b ON a.coo_commodity_id = b.id
+                       LEFT JOIN t_chain_commodity c ON b.commodity_id = c.id
+                       LEFT JOIN sys_user d ON a.user_id = d.user_id
+              WHERE a.audit_type = 3
+              GROUP BY d.user_name) x
+        ORDER BY x.total DESC limit 10
+    </select>
+
+
+    <select id="selectPurchaseStatistics" resultType="java.util.Map">
+        SELECT count(1)               total,
+               ifnull(SUM(amount), 0) amount,
+               audit_type             type
+        FROM t_chain_purchase
+        GROUP BY audit_type
+    </select>
+
+    <select id="selectPurchasetTansportStatus" resultType="java.util.Map">
+        SELECT count(1)         total,
+               transport_status type
+        FROM t_chain_purchase
+        GROUP BY transport_status
+    </select>
+
+
+
+
+
+    <insert id="insertChainPurchase" parameterType="ChainPurchase" useGeneratedKeys="true" keyProperty="id">
+        insert into t_chain_purchase
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="cooCommodityId != null">coo_commodity_id,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="quantity != null">quantity,</if>
+            <if test="amount != null">amount,</if>
+            <if test="auditType != null">audit_type,</if>
+            <if test="auditInfo != null">audit_info,</if>
+            <if test="transportType != null">transport_type,</if>
+            <if test="transportStatus != null">transport_status,</if>
+            <if test="REVISION != null">REVISION,</if>
+            <if test="createdBy != null">CREATED_BY,</if>
+            <if test="createdTime != null">CREATED_TIME,</if>
+            <if test="updatedBy != null">UPDATED_BY,</if>
+            <if test="updatedTime != null">UPDATED_TIME,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="cooCommodityId != null">#{cooCommodityId},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="quantity != null">#{quantity},</if>
+            <if test="amount != null">#{amount},</if>
+            <if test="auditType != null">#{auditType},</if>
+            <if test="auditInfo != null">#{auditInfo},</if>
+            <if test="transportType != null">#{transportType},</if>
+            <if test="transportStatus != null">#{transportStatus},</if>
+            <if test="REVISION != null">#{REVISION},</if>
+            <if test="createdBy != null">#{createdBy},</if>
+            <if test="createdTime != null">#{createdTime},</if>
+            <if test="updatedBy != null">#{updatedBy},</if>
+            <if test="updatedTime != null">#{updatedTime},</if>
+        </trim>
+    </insert>
+
+    <update id="updateChainPurchase" parameterType="ChainPurchase">
+        update t_chain_purchase
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="cooCommodityId != null">coo_commodity_id = #{cooCommodityId},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="amount != null">amount = #{amount},</if>
+            <if test="auditType != null">audit_type = #{auditType},</if>
+            <if test="auditInfo != null">audit_info = #{auditInfo},</if>
+            <if test="transportType != null">transport_type = #{transportType},</if>
+            <if test="transportStatus != null">transport_status = #{transportStatus},</if>
+            <if test="REVISION != null">REVISION = #{REVISION},</if>
+            <if test="updatedBy != null">UPDATED_BY = #{updatedBy},</if>
+            <if test="updatedTime != null">UPDATED_TIME = #{updatedTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteChainPurchaseById" parameterType="Long">
+        delete
+        from t_chain_purchase
+        where id = #{id}
+    </delete>
+
+    <delete id="deleteChainPurchaseByIds" parameterType="String">
+        delete from t_chain_purchase where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

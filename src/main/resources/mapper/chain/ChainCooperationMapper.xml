@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.chain.cooperation.mapper.ChainCooperationMapper">
+    
+    <resultMap type="ChainCooperation" id="ChainCooperationResult">
+        <result property="id"    column="id"    />
+        <result property="name"    column="name"    />
+        <result property="userId"    column="user_id"    />
+        <result property="userName"    column="user_name"    />
+        <result property="address"    column="address"    />
+        <result property="phone"    column="phone"    />
+        <result property="REVISION"    column="REVISION"    />
+        <result property="createdBy"    column="CREATED_BY"    />
+        <result property="createdTime"    column="CREATED_TIME"    />
+        <result property="updatedBy"    column="UPDATED_BY"    />
+        <result property="updatedTime"    column="UPDATED_TIME"    />
+    </resultMap>
+
+    <sql id="selectChainCooperationVo">
+        SELECT
+            a.id,
+            a.`NAME`,
+            a.user_id,
+            b.user_name,
+            a.address,
+            a.phone,
+            a.REVISION,
+            c.user_name CREATED_BY,
+            a.CREATED_TIME,
+            c.user_name UPDATED_BY,
+            a.UPDATED_TIME
+        FROM
+            t_chain_cooperation a
+                LEFT JOIN sys_user b ON a.user_id = b.user_id
+                LEFT JOIN sys_user c ON a.CREATED_BY = c.user_id
+        </sql>
+
+    <select id="selectChainCooperationList" parameterType="ChainCooperation" resultMap="ChainCooperationResult">
+        <include refid="selectChainCooperationVo"/>
+        <where>  
+            <if test="name != null  and name != ''"> and a.name like concat('%', #{name}, '%')</if>
+            <if test="userId != null "> and a.user_id = #{userId}</if>
+            <if test="address != null  and address != ''"> and a.address = #{address}</if>
+            <if test="phone != null  and phone != ''"> and a.phone = #{phone}</if>
+        </where>
+    </select>
+    
+    <select id="selectChainCooperationById" parameterType="Long" resultMap="ChainCooperationResult">
+        <include refid="selectChainCooperationVo"/>
+        where a.id = #{id}
+    </select>
+
+    <select id="selectChainCooperationByName" parameterType="String" resultMap="ChainCooperationResult">
+        <include refid="selectChainCooperationVo"/>
+        where a.name = #{name}
+    </select>
+
+        
+    <insert id="insertChainCooperation" parameterType="ChainCooperation" useGeneratedKeys="true" keyProperty="id">
+        insert into t_chain_cooperation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">name,</if>
+            <if test="userId != null">user_id,</if>
+            <if test="address != null">address,</if>
+            <if test="phone != null">phone,</if>
+            <if test="REVISION != null">REVISION,</if>
+            <if test="createdBy != null">CREATED_BY,</if>
+            <if test="createdTime != null">CREATED_TIME,</if>
+            <if test="updatedBy != null">UPDATED_BY,</if>
+            <if test="updatedTime != null">UPDATED_TIME,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="userId != null">#{userId},</if>
+            <if test="address != null">#{address},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="REVISION != null">#{REVISION},</if>
+            <if test="createdBy != null">#{createdBy},</if>
+            <if test="createdTime != null">#{createdTime},</if>
+            <if test="updatedBy != null">#{updatedBy},</if>
+            <if test="updatedTime != null">#{updatedTime},</if>
+         </trim>
+    </insert>
+
+    <update id="updateChainCooperation" parameterType="ChainCooperation">
+        update t_chain_cooperation
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="REVISION != null">REVISION = #{REVISION},</if>
+            <if test="updatedBy != null">UPDATED_BY = #{updatedBy},</if>
+            <if test="updatedTime != null">UPDATED_TIME = #{updatedTime},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteChainCooperationById" parameterType="Long">
+        delete from t_chain_cooperation where id = #{id}
+    </delete>
+
+    <delete id="deleteChainCooperationByIds" parameterType="String">
+        delete from t_chain_cooperation where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

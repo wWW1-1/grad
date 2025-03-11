@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * 模态窗口
- * 
- * @author ruoyi
  */
 @Controller
 @RequestMapping("/demo/modal")

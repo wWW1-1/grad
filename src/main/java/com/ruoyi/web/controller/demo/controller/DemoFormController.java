@@ -17,8 +17,6 @@ import com.ruoyi.common.utils.StringUtils;
 
 /**
  * 表单相关
- * 
- * @author ruoyi
  */
 @Controller
 @RequestMapping("/demo/form")
